@@ -3,6 +3,7 @@ var server = net.createServer();
 var hexToFloat = require('./hexToFloat');
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
+var log = require('./config/winston');
 
 let mysql = require('mysql');
 let config = require('./database');
@@ -10,16 +11,16 @@ let connection = mysql.createConnection(config);
 
 connection.connect(function(err) {
     if (err) {
-        console.log('Database not connected')
+        log.error(err)
+        console.log(`Database ${config.host} not connected`)
     } else {
-        console.log('Database connected')
+        console.log(`Database connected on ${config.host}`)
     }
 })
 
 if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    // Fork workers.
     for (let i = 0; i < numCPUs; i++) {
         cluster.fork();
     }
