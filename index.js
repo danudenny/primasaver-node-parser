@@ -1,12 +1,13 @@
 var net = require("net");
-var server = net.createServer();
-var hexToFloat = require('./hexToFloat');
+let mysql = require('mysql');
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-var log = require('./config/winston');
 
-let mysql = require('mysql');
-let config = require('./database');
+var hexToFloat = require('./utils/hexToFloat');
+var log = require('./config/winston');
+let config = require('./config/database');
+
+var server = net.createServer();
 let connection = mysql.createConnection(config);
 
 connection.connect(function(err) {
