@@ -10,5 +10,3 @@ function HexToFloat32(str) {
         return float32 * sign;
     } else return 0
 }
-
-

@@ -4,6 +4,7 @@ const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 
 var hexToFloat = require('./utils/hexToFloat');
+var hexToDec = require('./utils/hexToDec');
 var log = require('./config/winston');
 let config = require('./config/database');
 
@@ -43,28 +44,29 @@ if (cluster.isMaster) {
             var firstRaw = remoteAddress + "," + raw;
             var splittedFisrtRaw = firstRaw.split(',');
             var rawData = splittedFisrtRaw[1];
-            var workerId = `Worker ${process.pid}`
+            var workerId = `Worker ${process.pid}`;
+            var getLength = rawData.length;
 
-            if (rawData.length != 195) {
+            if (rawData.length != 390) {
                 console.log('Not Complete Data');
-                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip) VALUES (?, 'Uncompleted Data', ?, ?)", [rawData, workerId, remoteAddress], function (err, result, fields) {
+                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip, data_length) VALUES (?, 'Uncompleted Data', ?, ?, ?)", [rawData, workerId, remoteAddress, getLength], function (err, result, fields) {
                     if (err) throw err;
                 });
             } else if (raw == 0) {
                 console.log('Empty Data');
-                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip) VALUES (?, 'Empty / No Data', ?, ?)", [rawData, workerId, remoteAddress], function (err, result, fields) {
+                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip, data_length) VALUES (?, 'Empty / No Data', ?, ?, ?)", [rawData, workerId, remoteAddress, getLength], function (err, result, fields) {
                     if (err) throw err;
                 });
             } else if (rawData.length == 195) {
                 console.log('Receive Single Data');
-                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip) VALUES (?, 'Receive Single Data', ?, ?)", [rawData, workerId, remoteAddress], function (err, result, fields) {
+                connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip, data_length) VALUES (?, 'Receive Single Data', ?, ?, ?)", [rawData, workerId, remoteAddress, getLength], function (err, result, fields) {
                     if (err) throw err;
                 });
             } else {
                 var splitRawData = rawData.match(/.{1,195}/g);
                 for (let index = 0; index < splitRawData.length; index++) {
                     let dataResultLog = [splitRawData[index]];
-                    connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip) VALUES (?, 'Success', ?, ?)", [dataResultLog, workerId, remoteAddress], function (err, result, fields) {
+                    connection.query("INSERT INTO parse_result (parse, status, cluster, client_ip, data_length) VALUES (?, 'Success', ?, ?, ?)", [dataResultLog, workerId, remoteAddress, getLength], function (err, result, fields) {
                         if (err) throw err;
                     });
 
@@ -85,10 +87,19 @@ if (cluster.isMaster) {
                     }
 
                     // Device ID
-                    var deviceId = dataResult.substring(2, 11).toUpperCase();
+                    var deviceId = dataResult.substring(2, 11);
 
                     // DateTime
-                    var dateTime = dataResult.substring(11, 19);
+                    var dateTimeString = dataResult.substring(11, 19);
+                    var splitData = dateTimeString.match(/.{1,4}/g);
+                    var reverse = splitData[1] + splitData[0];
+                    var dateHexToDec = hexToDec.HexToDec(reverse);
+                    var dateDecAdd = dateHexToDec + 820454400;
+                    var unixToDate = new Date(dateDecAdd * 1000);
+                    var options = { hour12: false };
+                    // Date
+                    var dateReady = unixToDate.toISOString().split('T')[0];
+                    var timeReady = unixToDate.toLocaleTimeString('id-ID', options);
 
                     // kWh
                     var kwhString = dataResult.substring(19, 27);
@@ -225,19 +236,28 @@ if (cluster.isMaster) {
                     // pf
                     var pf = wtot / vatot;
 
-                    connection.query("INSERT INTO result (jenis, in_out, device_id, date_kwh, kwh, wtot, wbp, lwbp, ir, _is, it, freq, vartot, vatot, vr, vs, vt, wr, ws, wt, varr, vars, vart, var, vas, vat, pf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [jenis, in_out, deviceId, dateTime, kwh, wtot, wbp, lwbp, ir, is, it, freq, vartot, vatot, vr, vs, vt, wr, ws, wt, varr, vars, vart, Var, vas, vat, pf], function (err, result, fields) {
+                    var today = new Date();
+                    var options = { hour12: false };
+                    // Date Server
+                    var dateServerReady = today.toISOString().split('T')[0];
+                    var timeServerReady = today.toLocaleTimeString('id-ID', options);
+                    // console.log(dateServerReady , ' and ', dateReady);
+
+                    var vrms = 0
+                    var irms = 0
+                    connection.query(`INSERT INTO io_ctl (date_server,time_server,date_kwh,time_kwh,device_id,IR,ISc,IT,IRMS,VR,VS,VT,VRMS,Freq,WTot,WhR,WhS,WhT,VarhTot,VarhR,VarhS,VarhT,VAhTot,VAhR,VAhS,VAhT,kwh, wbp, lwbp, pf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                                [dateServerReady, timeServerReady, dateReady, timeReady, deviceId, ir, is, it, irms, vr, vs, vt, vrms, freq, wtot, wr, ws, wt, vartot, varr, vars, vart, vatot, Var, vas, vat, kwh, wbp, lwbp, pf ], function (err, result, fields) {
                         if (err) throw err;
                     });
 
-                    // getSubstr = splitFunc.splitInto(splitFunc.getApart(splitRawData[index]), 8);
-                    // for (let i = 0; i < getSubstr.length; i++) {
-                    //     const getSubs = getSubstr[i];
-                    //     var splitData = getSubs.match(/.{1,4}/g);
-                    //     var reverse = splitData[1]+splitData[0];
-                    //     var hex = hexToFloat.HexToFloat(reverse);
-                    //     console.log(hex);
-                    // }
-
+                    // connection.query("
+                    // INSERT INTO result (date_server,time_server,date_kwh,time_kwh,device_id,
+                    //     IR,ISc,IT,IRMS,VR,VS,VT,VRMS,Freq,WTot,WhR,WhS,WhT,VarhTot,
+                    //     VarhR,VarhS,VarhT,VAhTot,VAhR,VA) 
+                    //     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                    //             [dateServerReady, timeServerReady, dateReady, timeReady, deviceId, ir, is, it, freq, vartot, vatot, vr, vs, vt, wr, ws, wt, varr, vars, vart, Var, vas, vat, pf], function (err, result, fields) {
+                    //     if (err) throw err;
+                    // });
 
                 }
             }

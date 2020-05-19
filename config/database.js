@@ -6,11 +6,11 @@
 //   };
 
 let config = {
-    host    : '183.91.67.214',
-    port    : 3362,
+    host    : '192.168.1.62',
+    port    : 3306,
     user    : 'devel',
     password: 'Imani@44',
-    database: 'ctl_dev'
+    database: 'ctl'
   };
   
 module.exports = config;
