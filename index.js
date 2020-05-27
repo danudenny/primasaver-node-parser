@@ -100,10 +100,7 @@ if (cluster.isMaster) {
                     // Date
                     var dateReady = unixToDate.toISOString().split('T')[0];
                     var timeReady = unixToDate.toLocaleTimeString('id', options);
-                    // console.log(timeSplit);
-                    // console.log(dateDecAdd);
-                    // console.log(unixToDate);
-                    // console.log(dateDecAdd);
+
                     // kWh
                     var kwhString = dataResult.substring(19, 27);
                     var splitData = kwhString.match(/.{1,4}/g);
@@ -121,7 +118,6 @@ if (cluster.isMaster) {
                     var splitData = wbpString.match(/.{1,4}/g);
                     var reverse = splitData[1] + splitData[0];
                     var wbp = hexToFloat.HexToFloat(reverse);
-
                     // lwbp
                     var lwbpString = dataResult.substring(43, 51);
                     var splitData = lwbpString.match(/.{1,4}/g);
@@ -246,8 +242,9 @@ if (cluster.isMaster) {
                     var timeServerReady = today.toLocaleTimeString([], options);
                     // console.log(dateServerReady , ' and ', dateReady);
 
-                    var vrms = 0
-                    var irms = 0
+                    var vrms = (vr + vs + vt) / 3;
+                    var irms = (ir + is + it) / 3;
+
                     connection.query(`INSERT INTO io_ctl (date_server,time_server,date_kwh,time_kwh,device_id,IR,ISc,IT,IRMS,VR,VS,VT,VRMS,Freq,WTot,WhR,WhS,WhT,VarhTot,VarhR,VarhS,VarhT,VAhTot,VAhR,VAhS,VAhT,kwh, wbp, lwbp, pf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                                 [dateServerReady, timeServerReady, dateReady, timeReady, deviceId, ir, is, it, irms, vr, vs, vt, vrms, freq, wtot, wr, ws, wt, vartot, varr, vars, vart, vatot, Var, vas, vat, kwh, wbp, lwbp, pf ], function (err, result, fields) {
                         if (err) throw err;
