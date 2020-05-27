@@ -94,7 +94,7 @@ if (cluster.isMaster) {
                     var splitData = dateTimeString.match(/.{1,4}/g);
                     var reverse = splitData[1] + splitData[0];
                     var dateHexToDec = hexToDec.HexToDec(reverse);
-                    var dateDecAdd = (dateHexToDec + 820454400) - 17635;
+                    var dateDecAdd = (dateHexToDec + 820454400) - 25200;
                     var unixToDate = new Date(dateDecAdd * 1000);
                     var options = { hour12: false, timeZone: 'Asia/Jakarta' };
                     // Date
