@@ -99,7 +99,7 @@ if (cluster.isMaster) {
                     var options = { hour12: false };
                     // Date
                     var dateReady = unixToDate.toISOString().split('T')[0];
-                    var timeReady = unixToDate.toLocaleTimeString('id-ID', options);
+                    var timeReady = unixToDate.toLocaleTimeString([], options);
 
                     // kWh
                     var kwhString = dataResult.substring(19, 27);
@@ -240,7 +240,7 @@ if (cluster.isMaster) {
                     var options = { hour12: false };
                     // Date Server
                     var dateServerReady = today.toISOString().split('T')[0];
-                    var timeServerReady = today.toLocaleTimeString('id-ID', options);
+                    var timeServerReady = today.toLocaleTimeString([], options);
                     // console.log(dateServerReady , ' and ', dateReady);
 
                     var vrms = 0

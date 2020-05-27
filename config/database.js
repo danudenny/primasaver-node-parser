@@ -1,9 +1,9 @@
 // let config = {
-//     host    : 'localhost',
-//     user    : 'root',
-//     password: '',
-//     database: 'nest_tcp'
-//   };
+//   host: 'localhost',
+//   user: 'root',
+//   password: '',
+//   database: 'nest_tcp'
+// };
 
 let config = {
     host    : '192.168.1.62',
@@ -12,5 +12,5 @@ let config = {
     password: 'Imani@44',
     database: 'ctl'
   };
-  
+
 module.exports = config;
