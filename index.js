@@ -94,13 +94,16 @@ if (cluster.isMaster) {
                     var splitData = dateTimeString.match(/.{1,4}/g);
                     var reverse = splitData[1] + splitData[0];
                     var dateHexToDec = hexToDec.HexToDec(reverse);
-                    var dateDecAdd = dateHexToDec + 820454400;
+                    var dateDecAdd = (dateHexToDec + 820454400) - 17635;
                     var unixToDate = new Date(dateDecAdd * 1000);
-                    var options = { hour12: false };
+                    var options = { hour12: false, timeZone: 'Asia/Jakarta' };
                     // Date
                     var dateReady = unixToDate.toISOString().split('T')[0];
-                    var timeReady = unixToDate.toLocaleTimeString([], options);
-
+                    var timeReady = unixToDate.toLocaleTimeString('id', options);
+                    // console.log(timeSplit);
+                    // console.log(dateDecAdd);
+                    // console.log(unixToDate);
+                    // console.log(dateDecAdd);
                     // kWh
                     var kwhString = dataResult.substring(19, 27);
                     var splitData = kwhString.match(/.{1,4}/g);
