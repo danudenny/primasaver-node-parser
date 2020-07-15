@@ -10,7 +10,7 @@ let config = {
     port    : 3306,
     user    : 'devel',
     password: 'Imani@44',
-    database: 'ctl'
+    database: 'ctl_dev'
   };
 
 module.exports = config;
